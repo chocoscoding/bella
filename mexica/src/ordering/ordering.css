@@ -30,6 +30,8 @@
 .ord-sandbox { margin-top: 18px; display: inline-block; font-size: 13px; padding: 6px 12px; border-radius: 999px; background: var(--ord-badge, var(--ord-highlight)); color: var(--ord-highlight-ink); }
 .ord-banner { margin: 20px var(--ord-gutter) 0; padding: 12px 16px; border-radius: var(--ord-radius); background: var(--ord-highlight); color: var(--ord-highlight-ink); }
 
+.ord-loader { display: block; margin-bottom: -6px; }
+.ord-state p { margin: 0; }
 .ord-state { display: grid; justify-items: center; gap: 16px; text-align: center; padding: 120px var(--ord-gutter); font-size: 18px; }
 
 

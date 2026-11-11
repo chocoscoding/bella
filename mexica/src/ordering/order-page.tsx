@@ -5,6 +5,7 @@ import { Minus, Plus, Check, ShoppingBag, X, Clock, MapPin, Phone, ArrowLeft, Lo
 import { api, money, ApiError, type Menu, type MenuItem, type MenuSection, type StoreInfo, type Quote } from "./api";
 import { BagProvider, useBag } from "./cart";
 import { brandCopy } from "./brand";
+import { KitchenLoader } from "./kitchen-loader";
 
 export function OrderPage({ cancelledRef }: { cancelledRef?: string }) {
   return (
@@ -123,7 +124,10 @@ function OrderApp({ cancelledRef }: { cancelledRef?: string }) {
           <button className="ord-btn" onClick={() => location.reload()}>Try again</button>
         </div>
       ) : !menu ? (
-        <div className="ord-state" aria-busy="true">Warming up the kitchen…</div>
+        <div className="ord-state" aria-busy="true">
+          <KitchenLoader />
+          <p>Warming up the kitchen…</p>
+        </div>
       ) : (
         <>
           <div className="ord-toolbar">
