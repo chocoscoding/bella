@@ -20,15 +20,16 @@ Checked 2026-11-11. Both apps pass `tsc` and `next build` with no warnings. Prod
 - [ ] **Confirm hours and phones.**
   - Italian: Mon–Sat 8–10, Sun 8–9, (540) 388-4430.
   - Mexican: Mon–Sat 11–10, Sun 11–9, (540) 412-5009.
-- [x] **Online ordering goes to Froogle for now.** `src/lib/ordering-mode.ts` in each app controls it.
-  - **While `NEXT_PUBLIC_ORDER_API_URL` is unset:**
-    - Every Order button, blog link and the Restaurant `OrderAction` point to the Froogle menu.
-    - `/order` temporarily (307) redirects there.
-    - `/order` is left out of the sitemap.
-  - **To switch back to the built-in `/order` page:**
-    1. Deploy `api/`.
-    2. Set the variable on both Vercel projects.
-    3. Redeploy. No code change is needed.
+- [x] **Online ordering is built in; Froogle is gone.** Every Order and menu link goes to each site's own `/order` page.
+  - That page loads the live Clover menu from the ordering API on Helicarrier: project `bella-cucina`, service `ordering-api`, plan Heli S1 (always on), URL `https://ordering-api.on.helicarrier.xyz`.
+  - The API deploys automatically when `api/` changes on `main` in github.com/chocoscoding/bella.
+  - Its secrets are Helicarrier env vars. The production `ADMIN_TOKEN` is kept in `api/.env.production.local`, which is gitignored.
+  - Payment is still off (`ORDERING_ENABLED=false`), so customers browse the menu and are told to call.
+  - **To turn on online payment:**
+    1. Get working Clover Hosted Checkout private tokens. The current ones return 401.
+    2. Update the tokens on Helicarrier.
+    3. Point each merchant's webhook at `https://ordering-api.on.helicarrier.xyz/api/webhooks/clover`.
+    4. Set `ORDERING_ENABLED=true` and redeploy the service.
 - [ ] *(Optional)* Add a real owner or chef as the post author in `src/content/blog/*.ts` (`author.name`, `author.role`). It's a trust signal for Google.
 
 ## 2. Environment variables (Vercel → Project → Settings → Environment Variables, Production)
@@ -38,7 +39,7 @@ Checked 2026-11-11. Both apps pass `tsc` and `next build` with no warnings. Prod
 | `SITE_URL` | No: it already defaults to each production domain | Leave unset |
 | `GOOGLE_SITE_VERIFICATION` | Only for the HTML-tag method (DNS verification is better, see §4) | the `content` value from Search Console |
 | `BING_SITE_VERIFICATION` | Optional (you can import from Google instead) | the `content` value from Bing |
-| `NEXT_PUBLIC_ORDER_API_URL` | Leave unset until the ordering API is deployed (Order buttons use Froogle meanwhile) | e.g. `https://api.bellacucinalow.com` |
+| `NEXT_PUBLIC_ORDER_API_URL` | **Set** on both projects (Production) | `https://ordering-api.on.helicarrier.xyz` |
 
 `NEXT_PUBLIC_*` values are baked in at build time, so redeploy after you change one.
 
@@ -62,7 +63,7 @@ Smoke test once both are live:
 for u in https://www.bellacucinalow.com https://www.bellamexican.com; do for p in / /v1 /catering /blog /sitemap.xml /robots.txt /blog/rss.xml /opengraph-image; do printf "%s " "$(curl -s -o /dev/null -w '%{http_code}' $u$p)"; echo "$u$p"; done; done
 ```
 
-Expect `200` on everything. Expect `308` on Italian `/v1`. `/order` returns `307` to Froogle while online ordering is on Froogle. Mexican `/v1` will be `404`, which is correct because the route never existed there.
+Expect `200` on everything. Expect `308` on Italian `/v1`. `/order` returns `200` and loads the menu from the ordering API. Mexican `/v1` will be `404`, which is correct because the route never existed there.
 
 ## 4. Search engines (do it the day you deploy)
 
@@ -95,7 +96,7 @@ For **each** restaurant:
   - The Italian profile uses `https://www.bellacucinalow.com/`.
   - The Mexican profile uses `https://www.bellamexican.com/`.
   - Two separate profiles at the same address need separate listings, with suite or unit numbers if you have them, so Google doesn't merge them.
-- [ ] Menu link → `/#menu`. Order link → the restaurant's Froogle menu, or `/order`, which forwards to Froogle now and will keep working once the built-in ordering is live.
+- [ ] Menu link → `/#menu`. Order link → `/order`.
 - [ ] Add catering as a service and link it to `/catering`.
 - [ ] Post each new blog article as a GBP update with its cover image.
 - [ ] Ask happy customers for reviews. Reply to every review.
