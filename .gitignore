@@ -1,0 +1,18 @@
+# Dependencies and builds
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+# Secrets: never commit. Each app reads its own .env / Vercel / Helicarrier env vars.
+.env
+.env.*
+!.env.example
+
+# Local tooling
+.vercel/
+.DS_Store
+
+# API order ledger (customer data)
+api/data/*.json

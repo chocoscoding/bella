@@ -1,0 +1,47 @@
+/* Mexican brand tokens for the ordering pages. */
+.ord {
+  --ord-bg: #f8f1e9;
+  --ord-ink: #231f20;
+  --ord-card: #fffaf3;
+  --ord-input: #fff;
+  --ord-line: #231f2022;
+  --ord-line-strong: #231f2066;
+  --ord-accent: #f15a28;
+  --ord-accent-hover: #134e3b;
+  --ord-accent-ink: #fff;
+  --ord-highlight: #ffc62955;
+  --ord-highlight-ink: #231f20;
+  --ord-badge: #ffc629;
+  --ord-eyebrow: #ffc629;
+  --ord-hero-bg: #f15a28;
+  --ord-hero-ink: #f8f1e9;
+  --ord-green: #134e3b;
+  --ord-bump: ord-shake;
+  --ord-success: #134e3b;
+  --ord-error: #b3261e;
+  --ord-display: var(--display);
+  --ord-display-case: uppercase;
+  --ord-display-tracking: -.01em;
+  --ord-body: Bricolage, Arial, sans-serif;
+  --ord-radius: 14px;
+  --ord-img-radius: 50%;
+}
+.ord-hero .ord-eyebrow { color: var(--ord-ink); }
+.ord-card-thumb { box-shadow: 0 10px 14px -10px #1d1a1766; }
+
+/* A slimmer version of the site's pill nav for the ordering pages. */
+.order-nav { top: 16px; }
+.order-nav .nav-bar { min-height: 56px; padding: 8px 22px; }
+.order-nav .wordmark { gap: 1px; }
+.order-nav .wordmark b { font-size: 21px; }
+.order-nav .wordmark small { font-size: 7px; }
+.order-nav .desktop-nav, .order-nav .nav-actions { font-size: 12px; gap: 20px; }
+.order-nav .order-nav-phone { display: flex; }
+.ord { --ord-top: 120px; }
+@media (max-width: 760px) {
+  .order-nav { top: 12px; }
+  .order-nav .nav-bar { min-height: 52px; padding: 8px 16px; }
+  .order-nav .wordmark b { font-size: 20px; }
+  .order-nav .order-nav-phone { display: none; }
+  .ord { --ord-top: 100px; }
+}

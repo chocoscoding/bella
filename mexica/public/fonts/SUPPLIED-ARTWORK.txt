@@ -1,0 +1,4 @@
+CrNch display artwork subset
+
+Source: user-supplied CrNch — Fast Food & Burger Restaurant Website UI Kit.fig, embedded Chunk text outlines.
+This is a project-specific subset of the supplied letter artwork, not the original full font distribution. Usage remains subject to the user's UI-kit and asset rights.

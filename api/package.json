@@ -1,0 +1,28 @@
+{
+  "name": "bella-cucina-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Unified online-ordering backend for Bella Cucina Italian and Mexican, built on Clover.",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
+    "build": "tsc -p .",
+    "start": "node --env-file-if-exists=.env dist/src/server.js",
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx --env-file-if-exists=.env scripts/seed-menu.ts",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "express-validator": "^7.3.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

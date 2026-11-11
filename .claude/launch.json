@@ -1,0 +1,32 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "italian",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd italian && exec npx next dev --port 3101"
+      ],
+      "port": 3101
+    },
+    {
+      "name": "mexica",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd mexica && exec npx next dev --port 3102"
+      ],
+      "port": 3102
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd api && exec npm run dev"
+      ],
+      "port": 4000
+    }
+  ]
+}

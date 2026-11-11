@@ -1,0 +1,27 @@
+/* Catering splash: one full-bleed photo with the headline and a yellow contact card on top. */
+.mx-catering-splash{position:relative;min-height:max(100svh,780px);display:flex;flex-direction:column;justify-content:flex-end;padding:150px var(--gutter) 46px;color:var(--cream);overflow:hidden;isolation:isolate}
+.mx-catering-image{object-fit:cover;z-index:-2}
+.mx-catering-splash::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#231f20aa 0%,#231f2022 30%,#231f2044 55%,#231f20ee 100%)}
+.mx-catering-inner{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,430px);gap:5%;align-items:end;max-width:1500px;width:100%;margin:0 auto}
+.mx-catering-copy .eyebrow{color:var(--yellow)}
+.mx-catering-copy h1{display:grid;font-size:clamp(52px,7.4vw,132px);line-height:.92;text-shadow:0 4px 30px #0005}
+.mx-catering-copy h1 .accent{color:var(--yellow)}
+.mx-catering-copy>p:last-child{margin-top:26px;max-width:40ch;font-size:var(--type-body,17px);line-height:1.6;text-shadow:0 2px 14px #0008}
+.mx-catering-contact{display:flex;flex-direction:column;align-items:flex-start;gap:16px;background:var(--yellow);color:var(--ink);border-radius:28px;padding:34px;box-shadow:0 30px 60px -20px #0009}
+.mx-catering-contact .eyebrow{margin:0}
+.mx-catering-phone{font-family:Bricolage,Arial,sans-serif;font-weight:800;font-size:clamp(32px,3.4vw,50px);line-height:1;letter-spacing:-.02em;white-space:nowrap}
+.mx-catering-phone:hover{color:var(--orange)}
+.mx-catering-contact>p{font-size:15px;line-height:1.55}
+.mx-catering-contact .action{background:var(--ink)}
+.mx-catering-contact .action:hover{background:var(--orange)}
+.mx-catering-ready{width:100%;border-top:1px solid #231f2033;padding-top:16px;font-size:14px}
+.mx-catering-ready ul{margin:8px 0 0;padding-left:1.1em;display:grid;gap:2px}
+.mx-catering-where{display:flex;flex-direction:column;gap:6px;font-size:12px;opacity:.85}
+.mx-catering-where a{text-decoration:underline;text-underline-offset:3px}
+.mx-catering-guide{max-width:1500px;width:100%;margin:34px auto 0;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:900px){
+ .mx-catering-splash{min-height:0;padding:110px 20px 32px}
+ .mx-catering-splash::after{background:linear-gradient(180deg,#231f20aa 0%,#231f2033 20%,#231f20cc 46%,#231f20f2 100%)}
+ .mx-catering-inner{grid-template-columns:1fr;gap:32px;padding-top:26vh}
+ .mx-catering-contact{padding:26px 22px;border-radius:22px}
+}

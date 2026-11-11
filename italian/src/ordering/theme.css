@@ -1,0 +1,39 @@
+/* Italian brand tokens for the ordering pages. */
+.ord {
+  --ord-bg: #f3e8cc;
+  --ord-ink: #243d31;
+  --ord-card: #fbf5e6;
+  --ord-input: #fffdf6;
+  --ord-line: #243d3126;
+  --ord-line-strong: #243d3166;
+  --ord-accent: #d32618;
+  --ord-accent-hover: #015d48;
+  --ord-accent-ink: #fff;
+  --ord-highlight: #ffca2655;
+  --ord-highlight-ink: #243d31;
+  --ord-badge: #ffca26;
+  --ord-eyebrow: #ffca26;
+  --ord-hero-bg: #015d48;
+  --ord-hero-ink: #f3e8cc;
+  --ord-green: #015d48;
+  --ord-bump: ord-toss;
+  --ord-success: #015d48;
+  --ord-error: #b3261e;
+  --ord-display: var(--font-display), Georgia, serif;
+  --ord-display-case: uppercase;
+  --ord-display-tracking: .01em;
+  --ord-body: var(--font-body), system-ui, sans-serif;
+  --ord-radius: 18px;
+  --ord-img-radius: 14px;
+  --ord-top: 150px;
+}
+@media (max-width: 700px) {
+  .ord { --ord-top: 110px; }
+}
+
+/* Opt out of the site's global button "wave" fill and hover recolor. */
+.ord button::before { content: none; }
+.ord button:not(.ord-btn-primary, .ord-bagbar, .ord-picker-btn, [aria-current], [aria-selected="true"]):not(:disabled):is(:hover, :focus-visible) { color: inherit; }
+.ord .ord-card:not(:disabled):is(:hover, :focus-visible) { border-color: var(--ord-green); }
+.ord .ord-btn-primary:not(:disabled):is(:hover, :focus-visible) { color: var(--ord-accent-ink); }
+.ord .ord-option input { padding: 0; border: 0; flex: none; display: inline-block; }
