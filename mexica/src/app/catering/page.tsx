@@ -63,8 +63,12 @@ export default function Catering() {
             <div className="mx-catering-copy">
               <p className="eyebrow">BELLA CATERING ✦ LOCUST GROVE, VA</p>
               <h1 id="catering-title">
-                <span>You bring the occasion.</span>
-                <span className="accent">We bring the flavor.</span>
+                <span className="mx-reveal-line">
+                  <span>You bring the occasion.</span>
+                </span>
+                <span className="mx-reveal-line accent">
+                  <span>We bring the flavor.</span>
+                </span>
               </h1>
               <p>Mexican catering for family celebrations, office lunches and gatherings that deserve something good. Tacos, nachos and plates made for a crowd.</p>
             </div>
