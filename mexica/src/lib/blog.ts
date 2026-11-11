@@ -85,6 +85,19 @@ export function wordCount(post: Post) {
 
 export const readingMinutes = (post: Post) => Math.max(1, Math.round(wordCount(post) / 225));
 
+/** What a post card needs. Keeps article bodies out of client bundles. */
+export type PostSummary = Pick<Post, "slug" | "title" | "excerpt" | "category" | "datePublished" | "cover" | "draft"> & { minutes: number };
+export const summarize = (p: Post): PostSummary => ({
+  slug: p.slug,
+  title: p.title,
+  excerpt: p.excerpt,
+  category: p.category,
+  datePublished: p.datePublished,
+  cover: p.cover,
+  draft: p.draft,
+  minutes: readingMinutes(p),
+});
+
 export function headings(post: Post) {
   return post.body.filter((b): b is Extract<Block, { type: "h2" }> => b.type === "h2").map((b) => ({ id: slugify(b.text), text: plain(b.text) }));
 }

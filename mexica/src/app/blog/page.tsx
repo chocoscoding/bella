@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { getAllPosts, getCategories, slugify } from "@/lib/blog";
+import { getAllPosts, summarize } from "@/lib/blog";
 import { JsonLd, abs, breadcrumbSchema, ids, site } from "@/lib/seo";
-import { PostCard } from "@/components/blog/post-card";
+import { BlogGrid } from "@/components/blog/blog-grid";
 import { Breadcrumbs } from "@/components/blog/breadcrumbs";
 import { Action } from "@/components/brand";
 import { restaurant as r } from "@/lib/restaurant";
@@ -26,10 +26,6 @@ export const metadata: Metadata = {
 
 export default function BlogIndex() {
   const posts = getAllPosts();
-  const [lead, ...rest] = posts;
-  const shelves = getCategories()
-    .map((c) => ({ name: c, id: slugify(c), posts: rest.filter((p) => p.category === c) }))
-    .filter((s) => s.posts.length);
   return (
     <main id="main" className="blog-page">
       <JsonLd
@@ -67,32 +63,9 @@ export default function BlogIndex() {
           our kitchen.
         </h1>
         <p>{site.blogDescription}</p>
-        {shelves.length > 1 && (
-          <ul className="blog-topics" aria-label="Topics">
-            {shelves.map((s) => (
-              <li key={s.id}>
-                <a href={`#${s.id}`}>{s.name}</a>
-              </li>
-            ))}
-          </ul>
-        )}
       </header>
       <div className="page-panels">
-        {lead && (
-          <section aria-label="Latest story" className="blog-lead">
-            <PostCard post={lead} featured />
-          </section>
-        )}
-        {shelves.map((s) => (
-          <section key={s.id} id={s.id} className="panel blog-shelf" aria-labelledby={`${s.id}-title`}>
-            <h2 id={`${s.id}-title`}>{s.name}</h2>
-            <div className="post-grid">
-              {s.posts.map((p) => (
-                <PostCard key={p.slug} post={p} headingLevel="h3" />
-              ))}
-            </div>
-          </section>
-        ))}
+        <BlogGrid posts={posts.map(summarize)} />
         <section className="panel blog-cta">
           <span className="eyebrow">Hungry after all that reading?</span>
           <h2>Pull up a chair.</h2>

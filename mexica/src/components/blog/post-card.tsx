@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { formatDate, readingMinutes, type Post } from "@/lib/blog";
+import { formatDate, type PostSummary } from "@/lib/blog";
 
-export function PostCard({ post, featured = false, headingLevel = "h2" }: { post: Post; featured?: boolean; headingLevel?: "h2" | "h3" }) {
+export function PostCard({ post, featured = false, headingLevel = "h2", priority = featured }: { post: PostSummary; featured?: boolean; headingLevel?: "h2" | "h3"; priority?: boolean }) {
   const Heading = headingLevel;
   return (
     <article className={`post-card${featured ? " post-card-featured" : ""}`}>
@@ -14,7 +14,7 @@ export function PostCard({ post, featured = false, headingLevel = "h2" }: { post
             width={post.cover.width}
             height={post.cover.height}
             sizes={featured ? "(max-width:900px) 92vw, 50vw" : "(max-width:700px) 92vw, (max-width:1100px) 46vw, 30vw"}
-            priority={featured}
+            priority={priority}
           />
         </div>
         <div className="post-card-copy">
@@ -22,7 +22,7 @@ export function PostCard({ post, featured = false, headingLevel = "h2" }: { post
           <Heading>{post.title}</Heading>
           <p>{post.excerpt}</p>
           <span className="post-card-meta">
-            <time dateTime={post.datePublished}>{formatDate(post.datePublished)}</time> · {readingMinutes(post)} min read
+            <time dateTime={post.datePublished}>{formatDate(post.datePublished)}</time> · {post.minutes} min read
           </span>
         </div>
       </Link>

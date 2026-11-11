@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { formatDate, getAllPosts, getPost, headings, plain, readingMinutes, relatedPosts, wordCount } from "@/lib/blog";
+import { formatDate, getAllPosts, getPost, headings, plain, readingMinutes, relatedPosts, wordCount, summarize } from "@/lib/blog";
 import { JsonLd, abs, breadcrumbSchema, ids, site } from "@/lib/seo";
 import { ArticleBody, Inline } from "@/components/blog/rich-text";
 import { PostCard } from "@/components/blog/post-card";
@@ -171,7 +171,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
             <h2 id="related-title">Keep reading</h2>
             <div className="post-grid">
               {related.map((p) => (
-                <PostCard key={p.slug} post={p} headingLevel="h3" />
+                <PostCard key={p.slug} post={summarize(p)} headingLevel="h3" />
               ))}
             </div>
           </section>
