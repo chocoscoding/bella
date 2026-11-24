@@ -41,7 +41,8 @@
 .ord-sidebar { position: sticky; top: 16px; margin-top: 40px; max-height: calc(100vh - 32px); overflow: auto; display: grid; gap: 14px; align-content: start; scrollbar-width: thin; }
 .ord-sidebar > * { min-width: 0; }
 .ord-search { display: flex; flex-direction: row; align-items: center; gap: 8px; padding: 0 12px; min-height: 46px; background: var(--ord-input); border: 1px solid var(--ord-line-strong); border-radius: 999px; }
-.ord-search:focus-within { outline: 2px solid var(--ord-accent); border-color: transparent; }
+/* Focus ring drawn inside the edge: the sidebar scrolls (overflow: auto) and would crop an outline. */
+.ord-search:focus-within { outline: none; border-color: var(--ord-accent); box-shadow: inset 0 0 0 1px var(--ord-accent); }
 .ord .ord-search input { flex: 1; min-width: 0; border: 0; background: none; padding: 10px 0; font: inherit; font-size: 16px; color: var(--ord-ink); outline: none; display: block; width: 100%; border-radius: 0; }
 .ord-search input::-webkit-search-cancel-button { display: none; }
 .ord-search button { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; }
