@@ -4,6 +4,7 @@ import { createHmac } from 'node:crypto';
 import { priceCart } from '../src/services/menu.service.js';
 import { pickupWindow } from '../src/services/hours.service.js';
 import { verifyCloverSignature } from '../src/services/webhook.service.js';
+import { toCheckoutLineItems } from '../src/services/checkout.service.js';
 import { brands } from '../src/config/index.js';
 import { AppError } from '../src/utils/errors.js';
 import type { Menu } from '../src/types/menu.js';
@@ -80,4 +81,13 @@ test('displayName drops POS menu numbers but keeps real quantities', async () =>
   assert.equal(displayName('304A 1/2 Biscuit Gravy'), '1/2 Biscuit Gravy');
   assert.equal(displayName('3 Tacos'), '3 Tacos');
   assert.equal(displayName('Carnitas Tacos'), 'Carnitas Tacos');
+});
+
+test('checkout lines send each tax rate as { id, name, rate }', () => {
+  const cart = priceCart(menu, [{ itemId: 'TACOS', quantity: 2, modifierIds: ['CHK'], note: '' }]);
+  const [line] = toCheckoutLineItems(cart, 'BC-TEST01');
+  // Clover only reads `id`; any other field name makes payment fail with
+  // "Referenced tax rate does not exist: null".
+  assert.deepEqual(line.taxRates, [{ id: 'TAX', name: 'Sales Tax', rate: 900_000 }]);
+  assert.equal(line.note?.startsWith('BC-TEST01'), true);
 });

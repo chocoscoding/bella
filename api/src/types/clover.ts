@@ -111,7 +111,8 @@ export interface CheckoutLineItem {
   price: number;
   unitQty: number;
   note?: string;
-  taxRates?: { name: string; rate: number; taxRateUuid: string }[];
+  /** `id` must be one of the merchant's tax rates; Clover builds the paid order from it. */
+  taxRates?: { id: string; name: string; rate: number }[];
 }
 
 export interface CheckoutRedirectUrls {
