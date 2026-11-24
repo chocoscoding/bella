@@ -1,5 +1,6 @@
 import { validationResult, type ValidationChain } from 'express-validator';
 import type { NextFunction, Request, Response, RequestHandler } from 'express';
+import { log } from '../utils/log.js';
 
 /**
  * Runs express-validator chains, then answers 422 with the first message
@@ -12,6 +13,11 @@ export function validate(rules: ValidationChain[]): RequestHandler[] {
       const result = validationResult(req);
       if (result.isEmpty()) return next();
       const errors = result.array({ onlyFirstError: true });
+      // Field names and messages only; never the submitted values.
+      log.warn(`invalid ${req.method} ${req.originalUrl.split('?')[0]}`, {
+        fields: errors.map((e) => (e.type === 'field' ? e.path : e.type)).join(','),
+        reason: errors[0]?.msg,
+      });
       res.status(422).json({
         error: errors[0]?.msg,
         errors: errors.map((e) => ({ field: e.type === 'field' ? e.path : e.type, message: e.msg })),

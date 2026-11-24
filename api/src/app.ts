@@ -1,12 +1,14 @@
 import express from 'express';
 import { apiRoutes } from './routes/index.js';
 import { cors } from './middleware/http.js';
+import { requestLog } from './middleware/request-log.js';
 import { errorHandler, notFound } from './middleware/error-handler.js';
 
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
+  app.use(requestLog);
   app.use(cors);
   // Webhooks parse their own raw body; everything else is JSON.
   app.use(/^(?!\/api\/webhooks)/, express.json({ limit: '50kb' }));

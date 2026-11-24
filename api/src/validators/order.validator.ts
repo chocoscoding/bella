@@ -26,7 +26,7 @@ const name = (field: string, label: string) =>
     .withMessage(`Please add your ${label}.`)
     .isLength({ max: 40 })
     .withMessage(`Your ${label} is too long.`)
-    .customSanitizer((v: string) => v.replace(/\s+/g, ' '));
+    .customSanitizer((v: unknown) => (typeof v === 'string' ? v.replace(/\s+/g, ' ') : v));
 
 export const quoteRules = [brandParam, ...cartItems];
 
@@ -41,12 +41,12 @@ export const placeOrderRules = [
     .isEmail()
     .withMessage('Please check your email address.')
     .isLength({ max: 120 })
-    .customSanitizer((v: string) => v.toLowerCase()),
+    .customSanitizer((v: unknown) => (typeof v === 'string' ? v.toLowerCase() : v)),
   body('customer.phone')
     .isString()
     .withMessage('Please add a phone number.')
     // US numbers: keep 10 digits, drop a leading country code 1.
-    .customSanitizer((v: string) => v.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''))
+    .customSanitizer((v: unknown) => (typeof v === 'string' ? v.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '') : v))
     .isLength({ min: 10, max: 10 })
     .withMessage('Please add a 10-digit phone number so we can reach you about your order.'),
   body('pickup.asap').optional().isBoolean({ strict: true }).toBoolean(),

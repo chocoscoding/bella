@@ -7,6 +7,7 @@ import { pickupWindow, formatDay, formatTime } from './hours.service.js';
 import { orderStore, newRef } from './store.service.js';
 import { getBrand, orderingEnabled } from '../config/index.js';
 import { AppError } from '../utils/errors.js';
+import { log, usd } from '../utils/log.js';
 import type { Brand } from '../types/brand.js';
 import type { CheckoutWebhookEvent } from '../types/clover.js';
 import type { CartItemInput, Order, Pickup, PickupInput, PlaceOrderBody, PublicOrder, Quote, RefundBody } from '../types/order.js';
@@ -45,12 +46,22 @@ export async function placeOrder(brand: Brand, body: PlaceOrderBody): Promise<Or
   const ref = newRef();
 
   const cloverId = await upsertCustomer(brand, body.customer).catch((err: Error) => {
-    console.warn(`[${ref}] customer upsert failed: ${err.message}`);
+    log.warn(`[${ref}] customer upsert failed`, { brand: brand.id, reason: err.message });
     return null;
   });
 
   const redirectUrls = redirectUrlsFor(brand, ref);
-  const session = await createCheckoutSession(brand, { ref, customer: body.customer, cart, redirectUrls });
+  const session = await createCheckoutSession(brand, { ref, customer: body.customer, cart, redirectUrls }).catch((err: Error) => {
+    log.error(`[${ref}] checkout session failed`, { brand: brand.id, total: usd(cart.total), reason: err.message });
+    throw err;
+  });
+  log.info(`[${ref}] order created, sent to Clover checkout`, {
+    brand: brand.id,
+    items: cart.lines.reduce((n, l) => n + l.quantity, 0),
+    total: usd(cart.total),
+    pickup: pickup.asap ? 'asap' : pickup.at,
+    session: session.checkoutSessionId,
+  });
 
   return orderStore.save({
     ref,
@@ -78,6 +89,7 @@ export async function confirmPayment(brand: Brand, order: Order, paymentId: stri
   if (order.payment?.id === paymentId) return order;
   const payment = await getPayment(brand, paymentId);
   if (payment.result !== 'SUCCESS') {
+    log.warn(`[${order.ref}] payment not successful`, { brand: brand.id, result: payment.result, payment: paymentId });
     order.status = 'failed';
     return orderStore.save(order);
   }
@@ -91,9 +103,12 @@ export async function confirmPayment(brand: Brand, order: Order, paymentId: stri
     paidAt: new Date(payment.createdTime).toISOString(),
   };
   await orderStore.save(order);
+  log.info(`[${order.ref}] paid`, { brand: brand.id, amount: usd(payment.amount), cloverOrder: order.payment.cloverOrderId, payment: payment.id });
+  if (!order.payment.cloverOrderId) log.warn(`[${order.ref}] paid but Clover returned no order id; not labeled for the kitchen`, { brand: brand.id });
   if (order.payment.cloverOrderId) {
     const errors = await labelPaidOrder(brand, order, order.payment.cloverOrderId);
-    if (errors.length) console.warn(`[${order.ref}] Clover order labeling: ${errors.join('; ')}`);
+    if (errors.length) log.warn(`[${order.ref}] kitchen labeling incomplete`, { brand: brand.id, errors: errors.join('; ') });
+    else log.info(`[${order.ref}] labeled for the kitchen`, { brand: brand.id, cloverOrder: order.payment.cloverOrderId });
     order.kitchen = { labeledAt: new Date().toISOString(), errors };
     await orderStore.save(order);
   }
@@ -116,6 +131,7 @@ export async function reconcile(order: Order): Promise<Order> {
   const payment = await findCheckoutPayment(brand, order, claimed);
   if (payment) return confirmPayment(brand, order, payment.id);
   if (Date.now() > Date.parse(order.checkout.expirationTime) + 5 * 60_000) {
+    log.info(`[${order.ref}] checkout expired without payment`, { brand: brand.id, total: usd(order.totals.total) });
     order.status = 'expired';
     await orderStore.save(order);
   }
@@ -126,7 +142,7 @@ export async function getOrderForGuest(ref: string): Promise<PublicOrder> {
   const order = await orderStore.get(ref);
   if (!order) throw new AppError(404, 'We could not find that order.');
   const current = await reconcile(order).catch((err: Error) => {
-    console.warn(`[${order.ref}] reconcile failed: ${err.message}`);
+    log.warn(`[${order.ref}] payment check with Clover failed`, { brand: order.brand, reason: err.message });
     return order;
   });
   return toPublicOrder(current);
@@ -134,11 +150,19 @@ export async function getOrderForGuest(ref: string): Promise<PublicOrder> {
 
 /** Applies a Hosted Checkout webhook event. Unknown sessions are ignored. */
 export async function handleCheckoutEvent(event: CheckoutWebhookEvent): Promise<boolean> {
-  if (event.type !== 'PAYMENT') return false;
+  if (event.type !== 'PAYMENT') {
+    log.info('webhook ignored', { type: event.type, status: event.status });
+    return false;
+  }
   const order = await orderStore.find((o) => o.checkout.sessionId === event.data);
-  if (!order) return false;
+  if (!order) {
+    log.warn('webhook for an unknown checkout session', { status: event.status, session: event.data, payment: event.id });
+    return false;
+  }
+  log.info(`[${order.ref}] webhook ${event.status}`, { brand: order.brand, payment: event.id });
   if (event.status === 'APPROVED') await confirmPayment(getBrand(order.brand), order, event.id);
   else if (order.status === 'awaiting_payment') {
+    log.warn(`[${order.ref}] payment declined`, { brand: order.brand, status: event.status });
     order.status = 'failed';
     await orderStore.save(order);
   }
@@ -152,6 +176,7 @@ export async function refundOrder(ref: string, { reason = 'requested_by_customer
   const refund = await refundCharge(getBrand(order.brand), order.payment.id, reason, `refund-${order.ref}`);
   order.status = 'refunded';
   order.refund = { id: refund.id, amount: refund.amount, at: new Date().toISOString() };
+  log.info(`[${order.ref}] refunded`, { brand: order.brand, amount: usd(refund.amount), reason });
   return orderStore.save(order);
 }
 
