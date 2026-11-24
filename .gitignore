@@ -16,3 +16,6 @@ dist/
 
 # API order ledger (customer data)
 api/data/*.json
+
+# Internal reports (customer data): never commit
+reports/
