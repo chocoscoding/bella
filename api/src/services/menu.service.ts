@@ -1,6 +1,7 @@
 import { rest } from './clover/client.js';
 import { menuCopy } from '../data/menu-copy.js';
 import { AppError } from '../utils/errors.js';
+import { staffModifiers } from '../config/index.js';
 import type { Brand, BrandId } from '../types/brand.js';
 import type { CloverCategory, CloverItem, CloverModifierGroup, CloverTaxRate } from '../types/clover.js';
 import type { Menu, MenuItem, MenuSection } from '../types/menu.js';
@@ -38,6 +39,12 @@ export async function getMenu(brand: Brand, { fresh = false } = {}): Promise<Men
  * tidies the text: one space after a numbered prefix ("01.One Egg" -> "01. One Egg"),
  * single spaces, and no trailing dash ("92. Fajitas-" -> "92. Fajitas").
  */
+/** POS group names that read as jargon to guests get a plain label (Clover is unchanged). */
+const guestGroupName = (name: string) => (/^standard mods?$/i.test(name.trim()) ? 'Preferences' : name.trim());
+
+/** True for POS workflow flags ("Rush!!!", "See Server", "**To Go**") that guests shouldn't see. */
+export const isStaffModifier = (name: string) => staffModifiers.test(name.trim());
+
 export function displayName(name: string): string {
   const cleaned = name
     .replace(/\s+/g, ' ')
@@ -52,7 +59,7 @@ export function displayName(name: string): string {
 async function buildMenu(brand: Brand): Promise<Menu> {
   const api = rest(brand);
   const [items, groups, taxRates, categories] = await Promise.all([
-    api.all<CloverItem>('/items?expand=categories,tags,modifierGroups,taxRates,itemStock'),
+    api.all<CloverItem>('/items?expand=categories,tags,modifierGroups,taxRates,itemStock,menuItem'),
     api.all<CloverModifierGroup>('/modifier_groups?expand=modifiers'),
     api.all<CloverTaxRate>('/tax_rates'),
     api.all<CloverCategory>('/categories'),
@@ -82,8 +89,11 @@ async function buildMenu(brand: Brand): Promise<Menu> {
         name,
         price: i.price,
         available: i.available !== false && inStock,
-        description: copy?.description || '',
-        image: null, // photos are off for now; the cards still support a thumbnail
+        // Clover's online-menu copy (dashboard: item -> online ordering) wins; the local copy
+        // file only fills gaps (it is keyed by SKU and mostly covers the sandbox seed).
+        description: (i.menuItem?.description || i.description || copy?.description || '').trim(),
+        // Only Clover-hosted https photos; the seed's site-relative paths don't exist on the sites.
+        image: i.menuItem?.imageFilename?.startsWith('https://') ? i.menuItem.imageFilename : null,
         categoryIds: (i.categories?.elements || []).map((c) => c.id).filter((id) => shownCategories.has(id)),
         taxRates: (i.defaultTaxRates ? defaultTaxes : i.taxRates?.elements || []).map(({ id, name, rate }) => ({ id, name, rate })),
         modifierGroups: (i.modifierGroups?.elements || [])
@@ -91,13 +101,15 @@ async function buildMenu(brand: Brand): Promise<Menu> {
           .filter((g): g is CloverModifierGroup => Boolean(g && !g.deleted))
           .map((g) => ({
             id: g.id,
-            name: g.name,
+            name: guestGroupName(g.name),
             min: g.minRequired || 0,
             max: g.maxAllowed || null,
             options: (g.modifiers?.elements || [])
-              .filter((m) => m.available !== false)
-              .map((m) => ({ id: m.id, name: m.name, price: m.price || 0 })),
-          })),
+              .filter((m) => m.available !== false && !isStaffModifier(m.name))
+              .map((m) => ({ id: m.id, name: m.name.trim(), price: m.price || 0 })),
+          }))
+          // A group left with nothing guests can pick (all staff-only) is dropped.
+          .filter((g) => g.options.length > 0),
       };
     })
     // Keep the POS numbering order: by SKU, else by the original numbered name.

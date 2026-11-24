@@ -60,6 +60,9 @@ export interface CloverItem {
   tags?: CloverList<CloverTag>;
   modifierGroups?: CloverList<CloverRef>;
   taxRates?: CloverList<CloverTaxRate>;
+  /** Online-menu copy set in the Clover dashboard (expand=menuItem). */
+  description?: string;
+  menuItem?: { description?: string; imageFilename?: string; enabled?: boolean };
 }
 
 export interface CloverCustomer {

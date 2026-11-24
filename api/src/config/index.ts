@@ -36,6 +36,16 @@ function categoryFilter(prefix: string, fallback: string) {
 const SHARED_EXCLUDE = 'print options|orderintegrations|margarita|beer|wine|mixed drinks|happy hour|liquor';
 const excludeTags = (env.MENU_EXCLUDE_TAGS ?? 'Liquor,Beer,Wine').split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
 
+/**
+ * Kitchen/server-only modifiers that never show online (matched against the trimmed name).
+ * Default: anything wrapped in ** ("**Allergy**", "**To Go**") plus the POS workflow flags.
+ * Override with STAFF_MODIFIERS (a regex source).
+ */
+export const staffModifiers = new RegExp(
+  env.STAFF_MODIFIERS || '^(\\*\\*.*\\*\\*|as app|as entree|open item|on the fly|rush!*|see server|split plate)$',
+  'i',
+);
+
 /** Same hours Monday–Saturday, different on Sunday. */
 const week = (weekday: DayHours, sunday: DayHours): DayHours[] => [sunday, weekday, weekday, weekday, weekday, weekday, weekday];
 

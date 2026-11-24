@@ -93,3 +93,13 @@ test('checkout lines send each tax rate as { id, name, rate }', () => {
   assert.deepEqual(line.taxRates, [{ id: 'TAX', name: 'Sales Tax', rate: 900_000 }]);
   assert.equal(line.note?.startsWith('BC-TEST01'), true);
 });
+
+test('staff-only POS modifiers are hidden from guests', async () => {
+  const { isStaffModifier } = await import('../src/services/menu.service.js');
+  for (const staff of ['**Allergy**', '**To Go**', 'As App', 'As Entree', 'Open Item', 'On the Fly', 'Rush!!!', 'See Server', 'Split Plate', ' Rush ']) {
+    assert.equal(isStaffModifier(staff), true, staff);
+  }
+  for (const guest of ['No Added Salt', 'Vegan', 'Well Done', 'Xt Crispy', 'No Salsa ', 'No Rice', 'Xtra Verde', 'Carnitas']) {
+    assert.equal(isStaffModifier(guest), false, guest);
+  }
+});
