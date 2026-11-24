@@ -34,12 +34,17 @@ export async function getMenu(brand: Brand, { fresh = false } = {}): Promise<Men
 }
 
 /**
- * Drops the POS menu number from a name: "108. Quesadilla Texana", "#111 Scampi",
- * "107  Burrito Pastor", "01.Kids Pancake". A lone digit without a period is kept,
- * so "3 Tacos" stays as is.
+ * Keeps the POS menu number (customers order by it, e.g. "01. Special Lunch") and only
+ * tidies the text: one space after a numbered prefix ("01.One Egg" -> "01. One Egg"),
+ * single spaces, and no trailing dash ("92. Fajitas-" -> "92. Fajitas").
  */
 export function displayName(name: string): string {
-  const cleaned = name.replace(/^\s*(?:#\s*\d+[a-z]?\.?|\d+[a-z]?\.|\d{2,}[a-z]?)\s*(?=\S)/i, '').trim();
+  const cleaned = name
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^(#?\d+[a-z]?\.)(?=\S)/i, '$1 ')
+    .replace(/\s*-+$/, '')
+    .trim();
   return cleaned || name.trim();
 }
 

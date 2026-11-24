@@ -72,13 +72,15 @@ test('verifyCloverSignature accepts a valid signature and rejects tampering or r
   assert.equal(verifyCloverSignature(body, undefined, secret), false);
 });
 
-test('displayName drops POS menu numbers but keeps real quantities', async () => {
+test('displayName keeps POS menu numbers and tidies spacing and trailing dashes', async () => {
   const { displayName } = await import('../src/services/menu.service.js');
-  assert.equal(displayName('108. Quesadilla Texana'), 'Quesadilla Texana');
-  assert.equal(displayName('#111 Scampi'), 'Scampi');
-  assert.equal(displayName('107  Burrito Pastor'), 'Burrito Pastor');
-  assert.equal(displayName('01.Kids Egg, Meat, Fries & Toast'), 'Kids Egg, Meat, Fries & Toast');
-  assert.equal(displayName('304A 1/2 Biscuit Gravy'), '1/2 Biscuit Gravy');
+  assert.equal(displayName('01.One Egg Wit Achoice Bacon Or Sausage'), '01. One Egg Wit Achoice Bacon Or Sausage');
+  assert.equal(displayName('01. Special Lunch'), '01. Special Lunch');
+  assert.equal(displayName('108. Quesadilla Texana'), '108. Quesadilla Texana');
+  assert.equal(displayName('92. Fajitas-'), '92. Fajitas');
+  assert.equal(displayName('#111 Scampi'), '#111 Scampi');
+  assert.equal(displayName('107  Burrito Pastor'), '107 Burrito Pastor');
+  assert.equal(displayName('304A 1/2 Biscuit Gravy'), '304A 1/2 Biscuit Gravy');
   assert.equal(displayName('3 Tacos'), '3 Tacos');
   assert.equal(displayName('Carnitas Tacos'), 'Carnitas Tacos');
 });
