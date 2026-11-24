@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, Check, ShoppingBag, X, Clock, MapPin, Phone, ArrowLeft, Lock, Search, LayoutGrid } from "lucide-react";
+import { Minus, Plus, ShoppingBag, X, Clock, MapPin, Phone, ArrowLeft, Lock, Search, LayoutGrid } from "lucide-react";
 import { api, money, ApiError, type Menu, type MenuItem, type MenuSection, type StoreInfo, type Quote } from "./api";
 import { BagProvider, useBag } from "./cart";
 import { brandCopy } from "./brand";
@@ -54,9 +54,9 @@ function OrderApp({ cancelledRef }: { cancelledRef?: string }) {
 
   const panel = useRef<HTMLElement>(null);
 
-  // While the cart sheet is open on small screens, the page behind it doesn't scroll.
+  // While the cart drawer is open, the page behind it doesn't scroll and Escape closes it.
   useEffect(() => {
-    if (!bagOpen || !matchMedia("(max-width: 960px)").matches) return;
+    if (!bagOpen) return;
     const root = document.documentElement;
     const previous = [root.style.overflow, document.body.style.overflow];
     root.style.overflow = document.body.style.overflow = "hidden";
@@ -67,10 +67,9 @@ function OrderApp({ cancelledRef }: { cancelledRef?: string }) {
       window.removeEventListener("keydown", onKey);
     };
   }, [bagOpen]);
-  /** Dishes with options open the dialog; plain dishes go straight into the bag. */
+  /** Every dish opens its card, so the guest can pick options and add special instructions. */
   function choose(item: MenuItem) {
-    if (item.modifierGroups.length) setSelected(item);
-    else bag.add(item, [], 1, "");
+    setSelected(item);
   }
   function select(id: string) {
     setActive(id);
@@ -182,7 +181,7 @@ function OrderApp({ cancelledRef }: { cancelledRef?: string }) {
               )}
             </main>
             {bagOpen && <div className="ord-scrim" onClick={() => setBagOpen(false)} aria-hidden="true" />}
-            <aside className={`ord-bag ${bagOpen ? "is-open" : ""}`} aria-label="Your cart">
+            <aside className={`ord-bag ${bagOpen ? "is-open" : ""}`} aria-label="Your cart" inert={!bagOpen}>
               <BagPanel info={info} onClose={() => setBagOpen(false)} />
             </aside>
           </div>
@@ -335,36 +334,27 @@ function SectionPicker({ open, onClose, children }: { open: boolean; onClose: ()
 }
 
 function ItemCard({ item, index, onSelect }: { item: MenuItem; index: number; onSelect: () => void }) {
-  const quickAdd = !item.modifierGroups.length;
-  const [added, setAdded] = useState(false);
-  useEffect(() => {
-    if (!added) return;
-    const t = setTimeout(() => setAdded(false), 1200);
-    return () => clearTimeout(t);
-  }, [added]);
   return (
     <button
-      className={`ord-card ${added ? "is-added" : ""}`}
-      onClick={() => {
-        onSelect();
-        if (quickAdd) setAdded(true);
-      }}
-      aria-label={quickAdd ? `Add ${item.name}, ${money(item.price)}, to cart` : undefined}
+      className={`ord-card ${item.image ? "has-img" : ""}`}
+      onClick={onSelect}
       disabled={!item.available}
       style={{ "--i": Math.min(index, 12) } as React.CSSProperties /* stagger for the entrance */}
     >
       <span className="ord-card-text">
         <span className="ord-card-head">
           <span className="ord-card-name">{item.name}</span>
-          {item.image && <img src={item.image} alt="" loading="lazy" className="ord-card-thumb" />}
+          <span className="ord-card-price">{item.available ? money(item.price) : "Sold out"}</span>
         </span>
         {item.description && <span className="ord-card-desc">{item.description}</span>}
-        <span className="ord-card-foot">
-          <span className="ord-card-price">{item.available ? money(item.price) : "Sold out"}</span>
-          <span className="ord-card-add" aria-hidden="true">
-            {added ? <Check size={18} /> : <Plus size={18} />}
-          </span>
+      </span>
+      {item.image && (
+        <span className="ord-card-media">
+          <img src={item.image} alt="" loading="lazy" />
         </span>
+      )}
+      <span className="ord-card-add" aria-hidden="true">
+        <Plus size={18} />
       </span>
     </button>
   );
@@ -376,12 +366,16 @@ function ItemDialog({ item, onClose }: { item: MenuItem | null; onClose: () => v
   const [picked, setPicked] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [tried, setTried] = useState(false);
+  const [note, setNote] = useState("");
+  const [noteOpen, setNoteOpen] = useState(false);
 
   useEffect(() => {
     if (!item) return;
     setPicked(item.modifierGroups.filter((g) => g.min === 1 && g.max === 1).map((g) => g.options[0]?.id).filter(Boolean));
     setQuantity(1);
     setTried(false);
+    setNote("");
+    setNoteOpen(false);
     ref.current?.showModal();
   }, [item]);
 
@@ -414,7 +408,7 @@ function ItemDialog({ item, onClose }: { item: MenuItem | null; onClose: () => v
           e.preventDefault();
           setTried(true);
           if (missing.length) return;
-          bag.add(item, picked, quantity, "");
+          bag.add(item, picked, quantity, note);
           close();
         }}
       >
@@ -453,6 +447,31 @@ function ItemDialog({ item, onClose }: { item: MenuItem | null; onClose: () => v
               </fieldset>
             );
           })}
+          <div className="ord-note">
+            <button
+              type="button"
+              className="ord-note-toggle"
+              aria-expanded={noteOpen}
+              aria-controls="ord-item-note"
+              onClick={() => setNoteOpen((open) => !open)}
+            >
+              Special instructions <span aria-hidden="true">{noteOpen ? "−" : "+"}</span>
+            </button>
+            {noteOpen && (
+              <label className="ord-field" id="ord-item-note">
+                <span className="ord-sr">Special instructions for {item.name}</span>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  maxLength={140}
+                  rows={2}
+                  autoFocus
+                  placeholder="No onions, sauce on the side, extra crispy…"
+                />
+                <small className="ord-muted">{140 - note.length} characters left</small>
+              </label>
+            )}
+          </div>
         </div>
         <div className="ord-dialog-foot">
           <Stepper value={quantity} onChange={setQuantity} label={item.name} min={1} />
@@ -586,7 +605,7 @@ function BagPanel({ info, onClose }: { info: StoreInfo | null; onClose: () => vo
               <div>
                 <p className="ord-line-name">{l.name}</p>
                 {l.options.length > 0 && <p className="ord-line-meta">{l.options.join(", ")}</p>}
-                {l.note && <p className="ord-line-meta">“{l.note}”</p>}
+                {l.note && <p className="ord-line-meta ord-line-note">Note: {l.note}</p>}
                 <Stepper value={l.quantity} onChange={(n) => bag.setQuantity(l.key, n)} label={l.name} />
               </div>
               <p className="ord-line-price">{money(l.unitPrice * l.quantity)}</p>
@@ -594,13 +613,13 @@ function BagPanel({ info, onClose }: { info: StoreInfo | null; onClose: () => vo
           ))}
         </ul>
         <label className="ord-field">
-          <span>Special instructions</span>
+          <span>Note for the whole order (optional)</span>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             maxLength={300}
             rows={2}
-            placeholder="Allergies, no onions, sauce on the side…"
+            placeholder="Anything for the whole order, like utensils or pickup details…"
           />
         </label>
         <div className="ord-totals">
