@@ -7,6 +7,9 @@ import { BagProvider, useBag } from "./cart";
 import { brandCopy } from "./brand";
 import { KitchenLoader } from "./kitchen-loader";
 
+/** Fallback pause notice if the API doesn't send one (it normally does, from ORDERING_PAUSED_MESSAGE). */
+const PAUSED_MESSAGE = "Online ordering is paused today, please call us to place an order";
+
 export function OrderPage({ cancelledRef }: { cancelledRef?: string }) {
   return (
     <BagProvider>
@@ -97,7 +100,7 @@ function OrderApp({ cancelledRef }: { cancelledRef?: string }) {
             <li>
               <Clock size={16} aria-hidden="true" />
               {!info.orderingEnabled
-                ? "Online ordering opens soon · call us to order"
+                ? info.orderingMessage || PAUSED_MESSAGE
                 : info.openNow
                   ? `Open now · ready in about ${info.asapMinutes} min`
                   : "Closed now · schedule a pickup"}
@@ -632,7 +635,7 @@ function BagPanel({ info, onClose }: { info: StoreInfo | null; onClose: () => vo
         {info && !info.orderingEnabled ? (
           <>
             <p className="ord-notice" role="status">
-              Online ordering opens soon. Until then, call us with your order and we’ll have it ready.
+              {info.orderingMessage || PAUSED_MESSAGE}
             </p>
             <a className="ord-btn ord-btn-primary ord-wide" href={`tel:+1${info.phone.replace(/\D/g, "")}`}>
               <Phone size={16} aria-hidden="true" /> Call {info.phone}

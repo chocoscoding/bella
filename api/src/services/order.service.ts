@@ -5,7 +5,7 @@ import { getPayment, findCheckoutPayment, refundCharge } from './payment.service
 import { labelPaidOrder } from './kitchen.service.js';
 import { pickupWindow, formatDay, formatTime } from './hours.service.js';
 import { orderStore, newRef } from './store.service.js';
-import { getBrand, orderingEnabled } from '../config/index.js';
+import { getBrand, orderingEnabled, orderingPausedMessage } from '../config/index.js';
 import { AppError } from '../utils/errors.js';
 import { log, usd } from '../utils/log.js';
 import type { Brand } from '../types/brand.js';
@@ -40,7 +40,7 @@ export async function quoteCart(brand: Brand, items: CartItemInput[]): Promise<Q
  * label it for the kitchen once payment is confirmed.
  */
 export async function placeOrder(brand: Brand, body: PlaceOrderBody): Promise<Order> {
-  if (!orderingEnabled) throw new AppError(503, `Online ordering isn’t open yet. Please call us at ${brand.phone} to order.`);
+  if (!orderingEnabled) throw new AppError(503, `${orderingPausedMessage.replace(/[.!]$/, '')}: ${brand.phone}.`);
   const pickup = resolvePickup(brand, body.pickup);
   const cart = priceCart(await getMenu(brand, { fresh: true }), body.items);
   const ref = newRef();

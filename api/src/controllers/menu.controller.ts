@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { clover, orderingEnabled } from '../config/index.js';
+import { clover, orderingEnabled, orderingPausedMessage } from '../config/index.js';
 import { getMenu } from '../services/menu.service.js';
 import { pickupWindow } from '../services/hours.service.js';
 
@@ -18,6 +18,7 @@ export function storeInfo(req: Request, res: Response) {
     address: b.address,
     sandbox: clover.sandbox,
     orderingEnabled,
+    orderingMessage: orderingEnabled ? null : orderingPausedMessage,
     ...pickupWindow(b),
   });
 }

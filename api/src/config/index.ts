@@ -14,6 +14,8 @@ export const clover = {
 export const port = Number(env.PORT || 4000);
 /** Off unless explicitly enabled in production, so a dev server can't take real orders by accident. */
 export const orderingEnabled = (env.ORDERING_ENABLED ?? (sandbox ? 'true' : 'false')) === 'true';
+/** Shown on the order pages (and in refusals) while ordering is off. Change it on Helicarrier, no site deploy needed. */
+export const orderingPausedMessage = (env.ORDERING_PAUSED_MESSAGE || 'Online ordering is paused today, please call us to place an order').trim();
 export const adminToken = env.ADMIN_TOKEN || '';
 export const dataDir = env.DATA_DIR || 'data';
 

@@ -26,6 +26,8 @@ export type StoreInfo = {
   sandbox: boolean;
   /** False while online ordering is switched off: menu only, call to order. */
   orderingEnabled: boolean;
+  /** The pause notice to show while ordering is off (set on the API). */
+  orderingMessage?: string | null;
 };
 export type QuoteLine = {
   itemId: string;
